@@ -1,7 +1,7 @@
 /* Project 4 -  Huffan Tree Decoding
  * By Andy Hansen
  * 4/4/2020
- *CS101-001
+ * CS101-001
  */
 
 #include <iostream>
@@ -102,70 +102,92 @@ public:
     }
 
     // reads integers into inorder array
-    void ReadInOrder(string text)
+    void ReadInOrder(string file)
     {
-        stringstream ss;
-        string tmp;
-        int found;
-
-        ss << text;
-
         #ifdef _DEBUG_
             cout << "Function ReadInOrder() called." << endl;
         #endif
 
-        // scan ints into array
-        while(!ss.eof())
+        ifstream inorder;
+        string tmp, line;
+        int found;
+
+        inorder.open(file);
+
+        if(!inorder.is_open())
         {
-            ss >> tmp;
-
-            if(stringstream(tmp) >> found)
-            {
-                _inorder[_inorderCount] = found;
-                _inorderCount++;
-
-                #ifdef _DEBUG_
-                    cout << "\tInOrder added " << found << " to index " << _inorderCount - 1 << endl;
-                #endif
-            }
-
-            tmp = "";
+            Warn("Inorder file could not be opened.");
+            return;
         }
 
+        while(getline(inorder, line))
+        {
+            stringstream ss;
+            ss << line;
+
+            // scan ints into array
+            while(!ss.eof())
+            {
+                ss >> tmp;
+
+                if(stringstream(tmp) >> found)
+                {
+                    _inorder[_inorderCount] = found;
+                    _inorderCount++;
+
+                    #ifdef _DEBUG_
+                        cout << "\tInOrder added " << found << " to index " << _inorderCount - 1 << endl;
+                    #endif
+                }
+
+                tmp = "";
+            }
+        }
         _inorderRead = true;
     }
 
     // reads integers into postorder array 
-    void ReadPostOrder(string text)
+    void ReadPostOrder(string file)
     {
-        stringstream ss;
-        string tmp;
-        int found;
-
-        ss << text;
-
         #ifdef _DEBUG_
             cout << "Function ReadPostOrder() called." << endl;
         #endif
 
-        // scan ints into array
-        while(!ss.eof())
+        ifstream postorder;
+        string tmp, line;
+        int found;
+
+        postorder.open(file);
+
+        if(!postorder.is_open())
         {
-            ss >> tmp;
-
-            if(stringstream(tmp) >> found)
-            {
-                _postorder[_postorderCount] = found;
-                _postorderCount++;
-
-                #ifdef _DEBUG_
-                    cout << "\tPostOrder added " << found << " to index " << _postorderCount - 1 << endl;
-                #endif
-            }
-
-            tmp = "";
+            Warn("Postorder file could not be opened.");
+            return;
         }
 
+        while(getline(postorder, line))
+        {
+            stringstream ss;
+            ss << line;
+
+            // scan ints into array
+            while(!ss.eof())
+            {
+                ss >> tmp;
+
+                if(stringstream(tmp) >> found)
+                {
+                    _postorder[_postorderCount] = found;
+                    _postorderCount++;
+
+                    #ifdef _DEBUG_
+                        cout << "\tPostOrder added " << found << " to index " << _postorderCount - 1 << endl;
+                    #endif
+                }
+
+                tmp = "";
+            }
+        }
         _postorderRead = true;
     }
 
@@ -380,21 +402,6 @@ private:
     }
 };
 
-string RemoveNewLines(string str)
-{
-
-    string s = str;
-    std::string::size_type i = 0;
-
-    while (i < s.length()) {
-        i = s.find('\n', i);
-        if (i == string::npos) break;
-        s.erase(i);
-    }
-
-    return s;
-}
-
 int main(int argc, char** argv)
 {
     if(argc < 4)
@@ -405,45 +412,29 @@ int main(int argc, char** argv)
     else 
     {
         HuffmanTree* tree = new HuffmanTree();
-        ifstream inorder;
-        ifstream postorder;
+
         ifstream encoded;
 
-        inorder.open(argv[1]);
-        postorder.open(argv[2]);
         encoded.open(argv[3]);
 
-        if(!inorder.is_open() || !postorder.is_open() || !encoded.is_open())
+        if(!encoded.is_open())
         {
             cout << "One or more of the specified files could not be opened for reading. Terminating..." << endl;
             return 0;
         }
         else
         {
-            string inorderText = "";
-            string postorderText = "";
             string encodedText = "";
-            string tmp;
+            string line;
 
-            while( getline(inorder, tmp) ) inorderText += tmp;
-            while( getline(postorder, tmp) ) postorderText += tmp;
-            while( getline(encoded, tmp) ) encodedText += tmp;
+            while(getline(encoded, line)) encodedText += line;
 
-            inorder.close();
-            postorder.close();
-            encoded.close();
-
-            tree->ReadInOrder(inorderText);
-            tree->ReadPostOrder(postorderText);
-
-            // we don't want newlines messing up the tree
-            inorderText = RemoveNewLines(inorderText);
-            postorderText = RemoveNewLines(postorderText);
-            encodedText = RemoveNewLines(encodedText);
+            tree->ReadInOrder(argv[1]);
+            tree->ReadPostOrder(argv[2]);
 
             if(tree->Build())
             {
-                cout << tree->Decode(encodedText) << endl;
+                cout << tree->Decode(encodedText);
             }
         
             return 0;
